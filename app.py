@@ -1,68 +1,32 @@
-from flask import Flask, jsonify, request, render_template
-import os
+from flask import Flask, render_template, jsonify
 import json
 
 app = Flask(__name__)
 
-# Set path for data folder
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, 'data')
-
-# Load the job description JSON
-def get_job_description():
-    with open(os.path.join(DATA_DIR, 'job_description.json')) as f:
+# Load opportunities JSON data
+def get_opportunities():
+    with open('data/lever_opportunities.json') as f:
         return json.load(f)
 
-# Load the resume JSON
+# Load resumes JSON data
 def get_resumes():
-    with open(os.path.join(DATA_DIR, 'resume.json')) as f:
+    with open('data/lever_resumes.json') as f:
         return json.load(f)
 
-# Home route
 @app.route('/')
 def home():
-    return render_template('index.html')
+    opportunities = get_opportunities()['data']  # Extract opportunities data
+    resumes = get_resumes()['data']  # Extract resume data
 
-# Simulate the scoring and render the results page
-@app.route('/api/score_resumes', methods=['POST'])
-def score_resumes():
-    resumes = get_resumes()
-    job_description = get_job_description()
-    
-    scored_resumes = []
+    # Merge opportunities with corresponding resumes
+    for opp in opportunities:
+        for resume in resumes:
+            if opp['id'] == resume['id']:  # Match opportunity and resume by ID
+                opp['resume'] = resume['file']['downloadUrl'] if resume.get('file') else None
+                opp['positions'] = resume.get('parsedData', {}).get('positions', [])
+                opp['schools'] = resume.get('parsedData', {}).get('schools', [])
 
-    for resume in resumes:
-        score = 0
-        # Scoring based on required skills
-        for skill in job_description['required_skills']:
-            if skill in resume['skills']:
-                score += 1
-
-        # Bonus for preferred skills
-        for skill in job_description['preferred_skills']:
-            if skill in resume['skills']:
-                score += 0.5
-
-        # Experience scoring
-        if resume['years_of_experience'] >= job_description['min_experience']:
-            score += 1
-
-        # Education scoring
-        if resume['education'] == job_description['min_education']:
-            score += 1
-
-        scored_resumes.append({
-            'candidate_id': resume['candidate_id'],
-            'name': resume['name'],
-            'email': resume['email'],
-            'score': score
-        })
-
-    # Sort resumes by score
-    scored_resumes = sorted(scored_resumes, key=lambda x: x['score'], reverse=True)
-
-    # Pass job title and company from the job description
-    return render_template('results.html', candidates=scored_resumes, job_title=job_description['title'], company=job_description['company'])
+    return render_template('index.html', opportunities=opportunities)
 
 if __name__ == '__main__':
     app.run(debug=True)

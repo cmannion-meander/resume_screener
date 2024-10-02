@@ -3,30 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recruit Copilot - AI Resume Screener</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Recruit Copilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Recruit Copilot</h1>
-            <p>Your AI-powered assistant to screen resumes quickly and efficiently.</p>
-        </header>
+<body class="bg-gray-100">
+    <div class="max-w-6xl mx-auto py-6">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h1 class="text-2xl font-semibold mb-4">Candidates for User Experience Designer</h1>
 
-        <section>
-            <h2>How it Works</h2>
-            <ul>
-                <li>Upload resumes and job descriptions</li>
-                <li>AI analyzes and scores candidates</li>
-                <li>Get results ranked by best fit</li>
-            </ul>
-        </section>
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded">Add Referrals</button>
+                    <button class="bg-blue-500 text-white px-4 py-2 ml-2 rounded">Calibrate Position</button>
+                </div>
+                <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded">Close Job</button>
+            </div>
 
-        <footer>
-            <form action="/api/score_resumes" method="POST">
-                <button type="submit" class="btn">See Results</button>
-            </form>
-        </footer>
+            <table class="min-w-full bg-white">
+                <thead>
+                    <tr class="w-full bg-gray-50 border-b">
+                        <th class="px-6 py-4 text-left text-gray-700">Candidate</th>
+                        <th class="px-6 py-4 text-left text-gray-700">Skills</th>
+                        <th class="px-6 py-4 text-left text-gray-700">Match Score</th>
+                        <th class="px-6 py-4 text-left text-gray-700">Location</th>
+                        <th class="px-6 py-4 text-left text-gray-700">Contacted On</th>
+                        <th class="px-6 py-4 text-left text-gray-700"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for opp in opportunities %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 flex items-center">
+                            <span class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A3 3 0 016 17h12a3 3 0 01.879.804M12 14a4 4 0 100-8 4 4 0 000 8z" />
+                                </svg>
+                            </span>
+                            <div>
+                                <p class="font-medium">{{ opp.name }}</p>
+                                <p class="text-gray-500">Software Engineer</p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">{{ opp.skills }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <span class="text-teal-500">★★★★☆</span>
+                                <span class="ml-2">{{ opp.match_score }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">{{ opp.location }}</td>
+                        <td class="px-6 py-4">{{ opp.contacted_on }}</td>
+                        <td class="px-6 py-4">
+                            <button onclick="openModal('{{ opp.positions | tojson }}', '{{ opp.schools | tojson }}')" class="bg-blue-500 text-white px-4 py-1 rounded">View Resume</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 z-50 hidden justify-center items-center bg-gray-800 bg-opacity-50">
+        <div class="bg-white rounded-lg p-6 max-w-lg">
+            <h2 class="text-xl font-semibold mb-4">Career and Education History</h2>
+            <div id="modal-content" class="mb-4"></div>
+            <button onclick="closeModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function openModal(positions, schools) {
+            const modalContent = document.getElementById('modal-content');
+            let content = '<h3 class="text-lg font-bold">Career History</h3>';
+            positions = JSON.parse(positions);
+            schools = JSON.parse(schools);
+
+            positions.forEach(position => {
+                content += `<p>${position.title} at ${position.org} (${position.start.month}/${position.start.year} - ${position.end.month}/${position.end.year})</p>`;
+            });
+
+            content += '<h3 class="text-lg font-bold mt-4">Education</h3>';
+            schools.forEach(school => {
+                content += `<p>${school.degree} in ${school.field} from ${school.org} (${school.start.month}/${school.start.year} - ${school.end.month}/${school.end.year})</p>`;
+            });
+
+            modalContent.innerHTML = content;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+    </script>
 </body>
 </html>
