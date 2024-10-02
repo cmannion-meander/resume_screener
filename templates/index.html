@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruit Copilot - AI Resume Screener</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Recruit Copilot</h1>
+            <p>Your AI-powered assistant to screen resumes quickly and efficiently.</p>
+        </header>
+
+        <section>
+            <h2>How it Works</h2>
+            <ul>
+                <li>Upload resumes and job descriptions</li>
+                <li>AI analyzes and scores candidates</li>
+                <li>Get results ranked by best fit</li>
+            </ul>
+        </section>
+
+        <footer>
+            <form action="/api/score_resumes" method="POST">
+                <button type="submit" class="btn">See Results</button>
+            </form>
+        </footer>
+    </div>
+</body>
+</html>
