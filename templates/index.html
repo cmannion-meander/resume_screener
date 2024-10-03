@@ -1,100 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recruit Copilot</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="icon" href="/static/logo.png" type="image/png">
 </head>
-<body class="bg-gray-100">
-    <div class="max-w-6xl mx-auto py-6">
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h1 class="text-2xl font-semibold mb-4">Candidates for User Experience Designer</h1>
 
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded">Add Referrals</button>
-                    <button class="bg-blue-500 text-white px-4 py-2 ml-2 rounded">Calibrate Position</button>
-                </div>
-                <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded">Close Job</button>
-            </div>
+<body class="bg-light">
+    <div class="d-flex">
+        <!-- Sidebar Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white flex-column p-3 shadow-sm" style="width: 100px; height: 100vh;">
+            <a class="navbar-brand mb-4" href="#">
+                <img src="/static/logo.png" alt="Recruit Copilot Logo" width="75" height="75">
+            </a>
+            <ul class="navbar-nav flex-column">
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="#"><i class="fas fa-home me-2"></i> </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="#"><i class="fas fa-users me-2"></i> </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="#"><i class="fas fa-briefcase me-2"></i> </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="#"><i class="fas fa-info-circle me-2"></i> </a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="#"><i class="fas fa-cogs me-2"></i> </a>
+                </li>
+            </ul>
+        </nav>
 
-            <table class="min-w-full bg-white">
-                <thead>
-                    <tr class="w-full bg-gray-50 border-b">
-                        <th class="px-6 py-4 text-left text-gray-700">Candidate</th>
-                        <th class="px-6 py-4 text-left text-gray-700">Skills</th>
-                        <th class="px-6 py-4 text-left text-gray-700">Match Score</th>
-                        <th class="px-6 py-4 text-left text-gray-700">Location</th>
-                        <th class="px-6 py-4 text-left text-gray-700">Contacted On</th>
-                        <th class="px-6 py-4 text-left text-gray-700"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for opp in opportunities %}
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4 flex items-center">
-                            <span class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A3 3 0 016 17h12a3 3 0 01.879.804M12 14a4 4 0 100-8 4 4 0 000 8z" />
-                                </svg>
-                            </span>
+        <!-- Main Content -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <!-- Header Section -->
+                    <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+                        <div class="container">
+                            <h1 class="navbar-brand">Candidates for Senior Product Manager</h1>
                             <div>
-                                <p class="font-medium">{{ opp.name }}</p>
-                                <p class="text-gray-500">Software Engineer</p>
+                                <button class="btn btn-primary me-2">Export Shortlist</button>
+                                <button class="btn btn-secondary me-2">Calibrate Position</button>
+                                <button class="btn btn-outline-secondary">Close Job</button>
                             </div>
-                        </td>
-                        <td class="px-6 py-4">{{ opp.skills }}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <span class="text-teal-500">★★★★☆</span>
-                                <span class="ml-2">{{ opp.match_score }}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">{{ opp.location }}</td>
-                        <td class="px-6 py-4">{{ opp.contacted_on }}</td>
-                        <td class="px-6 py-4">
-                            <button onclick="openModal('{{ opp.positions | tojson }}', '{{ opp.schools | tojson }}')" class="bg-blue-500 text-white px-4 py-1 rounded">View Resume</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                    </nav>
+
+                    <!-- Candidates Table -->
+                    <div class="table-responsive">
+                        <table id="candidatesTable" class="table table-striped table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th onclick="sortTable(0)">Candidate <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Skill Match <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">Experience Fit <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">Career Trajectory <i class="fas fa-sort"></i></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for opp in opportunities %}
+                                <tr id="candidate-{{ opp.id }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle fa-2x text-secondary me-3"></i>
+                                            <div>
+                                                <strong>{{ opp.name }}</strong><br>
+                                                <small class="text-muted">Senior Product Manager</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {% for _ in range(opp.skill_match|int) %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% endfor %}
+                                            <span>{{ opp.skill_match }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {% for _ in range(opp.experience_fit|int) %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% endfor %}
+                                            <span>{{ opp.experience_fit }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {% for _ in range(opp.career_trajectory|int) %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% endfor %}
+                                            <span>{{ opp.career_trajectory }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button id="shortlist-btn-{{ opp.id }}" onclick="toggleShortlist('{{ opp.id }}')" class="btn btn-primary">Shortlist</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div id="modal" class="fixed inset-0 z-50 hidden justify-center items-center bg-gray-800 bg-opacity-50">
-        <div class="bg-white rounded-lg p-6 max-w-lg">
-            <h2 class="text-xl font-semibold mb-4">Career and Education History</h2>
-            <div id="modal-content" class="mb-4"></div>
-            <button onclick="closeModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded">Close</button>
-        </div>
-    </div>
-
+    <!-- Sorting Script -->
     <script>
-        function openModal(positions, schools) {
-            const modalContent = document.getElementById('modal-content');
-            let content = '<h3 class="text-lg font-bold">Career History</h3>';
-            positions = JSON.parse(positions);
-            schools = JSON.parse(schools);
-
-            positions.forEach(position => {
-                content += `<p>${position.title} at ${position.org} (${position.start.month}/${position.start.year} - ${position.end.month}/${position.end.year})</p>`;
-            });
-
-            content += '<h3 class="text-lg font-bold mt-4">Education</h3>';
-            schools.forEach(school => {
-                content += `<p>${school.degree} in ${school.field} from ${school.org} (${school.start.month}/${school.start.year} - ${school.end.month}/${school.end.year})</p>`;
-            });
-
-            modalContent.innerHTML = content;
-            document.getElementById('modal').classList.remove('hidden');
+        function sortTable(n) {
+            const table = document.getElementById("candidatesTable");
+            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            switching = true;
+            dir = "asc"; // Set the sorting direction to ascending
+        
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < rows.length - 1; i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+        
+                    // Check if we are sorting numeric or string values
+                    const xContent = x.textContent.trim();
+                    const yContent = y.textContent.trim();
+                    const xValue = isNaN(xContent) ? xContent.toLowerCase() : parseFloat(xContent);
+                    const yValue = isNaN(yContent) ? yContent.toLowerCase() : parseFloat(yContent);
+        
+                    if (dir === "asc") {
+                        if (xValue > yValue) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir === "desc") {
+                        if (xValue < yValue) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount === 0 && dir === "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
         }
+        
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
+        function toggleShortlist(candidateId) {
+            const row = document.getElementById(`candidate-${candidateId}`);
+            const button = document.getElementById(`shortlist-btn-${candidateId}`);
+
+            if (button.textContent === 'Shortlist') {
+                row.classList.add('table-success');
+                button.textContent = 'Unshortlist';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-danger');
+            } else {
+                row.classList.remove('table-success');
+                button.textContent = 'Shortlist';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+            }
         }
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
