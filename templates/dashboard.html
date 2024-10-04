@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Dashboard - Recruit Copilot
+{% endblock %}
+
+{% block header %}
+  Dashboard Overview
+{% endblock %}
+
+{% block content %}
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Active Job Listings</h5>
+          <p class="card-text display-4">8</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Candidates in Pipeline</h5>
+          <p class="card-text display-4">39</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Shortlisted Candidates</h5>
+          <p class="card-text display-4">10</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Candidate Source Breakdown</h5>
+          <canvas id="candidatesourcechart" width="80%" height="50vh"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extrajs %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var ctx = document.getElementById('candidatesourcechart').getContext('2d')
+      var candidatesourcechart = new Chart(ctx, {
+        type: 'bar', // or 'pie', 'line', etc.
+        data: {
+          labels: ['Referral', 'Job Boards', 'Agency', 'Direct Applications'],
+          datasets: [
+            {
+              label: '# of Candidates',
+              data: [12, 19, 3, 5], // Example data
+              backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)'],
+              borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'],
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      })
+    })
+  </script>
+{% endblock %}

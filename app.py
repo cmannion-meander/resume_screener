@@ -4,6 +4,9 @@ import random
 
 app = Flask(__name__)
 
+# List of possible industries
+industries = ['Technology', 'Healthcare', 'Finance']
+
 # Load opportunities JSON data
 def get_opportunities():
     with open('data/lever_opportunities.json') as f:
@@ -16,53 +19,41 @@ def get_resumes():
 
 @app.route('/')
 def home():
+    return render_template('dashboard.html')
+
+@app.route('/candidates')
+def candidates():
     opportunities = get_opportunities()['data']  # Extract opportunities data
     resumes = get_resumes()['data']  # Extract resume data
 
-    # Merge opportunities with corresponding resumes
+    # Merge opportunities with corresponding resumes and generate match scores
     for opp in opportunities:
         for resume in resumes:
             if opp['id'] == resume['id']:  # Match opportunity and resume by ID
-                opp['resume'] = resume['file']['downloadUrl'] if resume.get('file') else None
-                opp['positions'] = resume.get('parsedData', {}).get('positions', [])
-                opp['schools'] = resume.get('parsedData', {}).get('schools', [])
+                opp['resume'] = resume.get('parsedData', {})
+                opp['positions'] = resume['parsedData'].get('positions', [])
+                opp['schools'] = resume['parsedData'].get('schools', [])
 
         # Generate random scores for the match factors
-        opp['skill_match'] = round(random.uniform(3, 5), 1)  # Random skill match score (between 3 and 5)
-        opp['experience_fit'] = round(random.uniform(3, 5), 1)  # Random experience fit score (between 3 and 5)
-        opp['career_trajectory'] = round(random.uniform(3, 5), 1)  # Random career trajectory score (between 3 and 5)
+        opp['work_experience'] = round(random.uniform(3, 5), 1)  # Random work experience score
+        opp['technical_skills'] = round(random.uniform(3, 5), 1)  # Random technical skills score
+        opp['soft_skills'] = round(random.uniform(3, 5), 1)  # Random soft skills score
+        opp['industry'] = random.choice(industries)  # Randomly assign an industry
 
-    return render_template('index.html', opportunities=opportunities)
+    return render_template('candidates.html', opportunities=opportunities)
 
-def calculate_match_score(opportunity, resume):
-    # Simulated scoring logic
-    score = 0
+@app.route('/jobs')
+def jobs():
+    # Example job data
+    jobs = [
+        {'id': 1, 'title': 'Senior Product Manager', 'location': 'New York', 'industry': 'Technology', 'created_on': '2024-10-04', 'status': 'Open'},
+        {'id': 2, 'title': 'Software Engineer', 'location': 'San Francisco', 'industry': 'Technology', 'created_on': '2024-09-22', 'status': 'Closed'}
+    ]
+    return render_template('jobs.html', jobs=jobs)
 
-    # Skill Matching (example logic)
-    required_skills = ["Java", "Python", "SQL", "Agile"]
-    candidate_skills = ["Java", "Python", "SQL"]  # Example candidate skills (this should come from resume)
-
-    matched_skills = set(candidate_skills) & set(required_skills)
-    skill_score = len(matched_skills) / len(required_skills) * 5  # Score out of 5
-
-    # Experience Matching (example logic)
-    positions = resume.get('parsedData', {}).get('positions', [])
-    if positions:
-        experience_score = 4.5  # Assuming good experience match for now
-    else:
-        experience_score = 2  # Lower score for no relevant experience
-
-    # Education Matching (example logic)
-    schools = resume.get('parsedData', {}).get('schools', [])
-    if schools:
-        education_score = 4  # Higher if education matches role requirements
-    else:
-        education_score = 2
-
-    # Final score is an average of all components
-    final_score = (skill_score + experience_score + education_score) / 3
-    return round(final_score, 1)
-
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

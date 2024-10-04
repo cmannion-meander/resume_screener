@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Candidates
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col">
+      <!-- Header Section -->
+      <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+          <h1 class="navbar-brand">Candidates for Senior Product Manager</h1>
+          <div>
+            <button class="btn btn-primary me-2">Export Shortlist</button>
+            <button class="btn btn-secondary me-2">Calibrate Position</button>
+            <button class="btn btn-outline-secondary">Close Job</button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Candidates Table -->
+      <div class="table-responsive">
+        <table id="candidatesTable" class="table table-striped table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th onclick="sortTable(0)">
+                Candidate <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable(1)">
+                Work Experience <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable(2)">
+                Technical Skills <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable(3)">
+                Soft Skills <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable(4)">
+                Location <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable(5)">
+                Industry <i class="fas fa-sort"></i>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for opp in opportunities %}
+              <tr id="candidate-{{ opp.id }}">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle fa-2x text-secondary me-3"></i>
+                    <div>
+                      <strong>{{ opp.name }}</strong><br />
+                      <small class="text-muted">Senior Product Manager</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    {% for _ in range(opp.work_experience|int) %}
+                      <i class="fas fa-star text-warning"></i>
+                    {% endfor %}
+                    <span>{{ opp.work_experience }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    {% for _ in range(opp.technical_skills|int) %}
+                      <i class="fas fa-star text-warning"></i>
+                    {% endfor %}
+                    <span>{{ opp.technical_skills }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    {% for _ in range(opp.soft_skills|int) %}
+                      <i class="fas fa-star text-warning"></i>
+                    {% endfor %}
+                    <span>{{ opp.soft_skills }}</span>
+                  </div>
+                </td>
+                <td>{{ opp.location }}</td>
+                <td>{{ opp.industry }}</td>
+                <td>
+                  <button id="shortlist-btn-{{ opp.id }}" onclick="toggleShortlist('{{ opp.id }}')" class="btn btn-primary">Shortlist</button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extrajs %}
+  <!-- Sorting Script -->
+  <script>
+    function sortTable(n) {
+      const table = document.getElementById('candidatesTable')
+      let rows,
+        switching,
+        i,
+        x,
+        y,
+        shouldSwitch,
+        dir,
+        switchcount = 0
+      switching = true
+      dir = 'asc' // Set the sorting direction to ascending
+    
+      while (switching) {
+        switching = false
+        rows = table.rows
+        for (i = 1; i < rows.length - 1; i++) {
+          shouldSwitch = false
+          x = rows[i].getElementsByTagName('TD')[n]
+          y = rows[i + 1].getElementsByTagName('TD')[n]
+    
+          const xContent = x.textContent.trim()
+          const yContent = y.textContent.trim()
+          const xValue = isNaN(xContent) ? xContent.toLowerCase() : parseFloat(xContent)
+          const yValue = isNaN(yContent) ? yContent.toLowerCase() : parseFloat(yContent)
+    
+          if (dir === 'asc') {
+            if (xValue > yValue) {
+              shouldSwitch = true
+              break
+            }
+          } else if (dir === 'desc') {
+            if (xValue < yValue) {
+              shouldSwitch = true
+              break
+            }
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i])
+          switching = true
+          switchcount++
+        } else {
+          if (switchcount === 0 && dir === 'asc') {
+            dir = 'desc'
+            switching = true
+          }
+        }
+      }
+    }
+    
+    function toggleShortlist(candidateId) {
+      const row = document.getElementById(`candidate-${candidateId}`)
+      const button = document.getElementById(`shortlist-btn-${candidateId}`)
+    
+      if (button.textContent === 'Shortlist') {
+        row.classList.add('table-success')
+        button.textContent = 'Unshortlist'
+        button.classList.remove('btn-primary')
+        button.classList.add('btn-danger')
+      } else {
+        row.classList.remove('table-success')
+        button.textContent = 'Shortlist'
+        button.classList.remove('btn-danger')
+        button.classList.add('btn-primary')
+      }
+    }
+  </script>
+{% endblock %}
