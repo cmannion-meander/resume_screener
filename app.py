@@ -9,12 +9,22 @@ industries = ['Technology', 'Healthcare', 'Finance']
 
 # Load opportunities JSON data
 def get_opportunities():
-    with open('data/lever_opportunities.json') as f:
+    with open('data/candidates.json') as f:
         return json.load(f)
 
 # Load resumes JSON data
 def get_resumes():
-    with open('data/lever_resumes.json') as f:
+    with open('data/resume.json') as f:
+        return json.load(f)
+    
+# Load technical skills JSON data
+def get_technical_skills():
+    with open('data/technical_skills.json') as f:
+        return json.load(f)
+    
+# Load soft skills JSON data
+def get_soft_skills():
+    with open('data/soft_skills.json') as f:
         return json.load(f)
 
 @app.route('/')
@@ -25,22 +35,37 @@ def home():
 def candidates():
     opportunities = get_opportunities()['data']  # Extract opportunities data
     resumes = get_resumes()['data']  # Extract resume data
+    technical_skills = get_technical_skills()['data']  # Extract technical skills data
+    soft_skills = get_soft_skills()['data']  # Extract soft skills data
 
     # Merge opportunities with corresponding resumes and generate match scores
     for opp in opportunities:
-        for resume in resumes:
-            if opp['id'] == resume['id']:  # Match opportunity and resume by ID
-                opp['resume'] = resume.get('parsedData', {})
-                opp['positions'] = resume['parsedData'].get('positions', [])
-                opp['schools'] = resume['parsedData'].get('schools', [])
+        matching_resume = next((resume for resume in resumes if resume['id'] == opp['id']), None)
+        if matching_resume:
+            opp['positions'] = matching_resume.get('positions', [])  # Get positions for work experience
+            opp['schools'] = matching_resume.get('schools', [])  # Get schools for education
+            opp['work_experience'] = matching_resume.get('work_experience_rating', 3)  # Default to 3 if not found
+        else:
+            opp['work_experience'] = 3  # Default work experience if no resume found
 
-        # Generate random scores for the match factors
-        opp['work_experience'] = round(random.uniform(3, 5), 1)  # Random work experience score
-        opp['technical_skills'] = round(random.uniform(3, 5), 1)  # Random technical skills score
-        opp['soft_skills'] = round(random.uniform(3, 5), 1)  # Random soft skills score
-        opp['industry'] = random.choice(industries)  # Randomly assign an industry
+        # Extract technical skills
+        opp['technical_skills_data'] = next(
+            (ts['skills_details'] for ts in technical_skills if ts['id'] == opp['id']), []
+        )
+
+        # Extract soft skills
+        opp['soft_skills_data'] = next(
+            (ss['skills_details'] for ss in soft_skills if ss['id'] == opp['id']), []
+        )
+
+        # Generate random skill scores
+        opp['technical_skills_score'] = round(random.uniform(3, 5), 1)  # Random score between 3 and 5
+        opp['soft_skills_score'] = round(random.uniform(3, 5), 1)  # Random score between 3 and 5
+        
+        opp['industry'] = random.choice(industries)  # Randomly assign an industry (to be updated lated)
 
     return render_template('candidates.html', opportunities=opportunities)
+
 
 @app.route('/jobs')
 def jobs():

@@ -11,10 +11,11 @@
       <nav class="navbar navbar-light bg-white shadow-sm mb-4">
         <div class="container">
           <h1 class="navbar-brand">Candidates for Senior Product Manager</h1>
+          <p class="text-muted">Acme Inc. is seeking an experienced Senior Product Manager to lead the development and execution of our product strategy. In this role, you will collaborate with cross-functional teams, including engineering, design, marketing, and sales, to drive the product lifecycle from concept to launch. You will be responsible for defining the product roadmap, prioritizing features, and ensuring alignment with customer needs and business goals. The ideal candidate has a proven track record in product management, strong analytical and problem-solving skills, and the ability to balance customer feedback with business objectives. Experience in agile methodologies and excellent communication skills are essential for success in this role. Join us and help shape the future of innovation at Acme Inc.</p>
           <div>
             <button class="btn btn-primary me-2">Export Shortlist</button>
             <button class="btn btn-secondary me-2">Calibrate Position</button>
-            <button class="btn btn-outline-secondary">Close Job</button>
+            <button class="btn btn-outline-danger">Close Job</button>
           </div>
         </div>
       </nav>
@@ -59,26 +60,33 @@
                 </td>
                 <td>
                   <div>
-                    {% for _ in range(opp.work_experience|int) %}
-                      <i class="fas fa-star text-warning"></i>
-                    {% endfor %}
-                    <span>{{ opp.work_experience }}</span>
+                    {% if opp.work_experience %}
+                      {% for _ in range(opp.work_experience|int) %}
+                        <i class="fas fa-star text-warning"></i>
+                      {% endfor %}
+                      <span>{{ opp.work_experience }}</span>
+                    {% else %}
+                      <span>No work experience data</span>
+                    {% endif %}
+                    <i class="fas fa-info-circle text-info ms-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#resumeModal-{{ opp.id }}"></i>
                   </div>
                 </td>
                 <td>
                   <div>
-                    {% for _ in range(opp.technical_skills|int) %}
+                    {% for _ in range(opp.technical_skills_score|int) %}
                       <i class="fas fa-star text-warning"></i>
                     {% endfor %}
-                    <span>{{ opp.technical_skills }}</span>
+                    <span>{{ opp.technical_skills_score }}</span>
+                    <i class="fas fa-info-circle text-info ms-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#techSkillsModal-{{ opp.id }}"></i>
                   </div>
                 </td>
                 <td>
                   <div>
-                    {% for _ in range(opp.soft_skills|int) %}
+                    {% for _ in range(opp.soft_skills_score|int) %}
                       <i class="fas fa-star text-warning"></i>
                     {% endfor %}
-                    <span>{{ opp.soft_skills }}</span>
+                    <span>{{ opp.soft_skills_score }}</span>
+                    <i class="fas fa-info-circle text-info ms-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#softSkillsModal-{{ opp.id }}"></i>
                   </div>
                 </td>
                 <td>{{ opp.location }}</td>
@@ -87,6 +95,75 @@
                   <button id="shortlist-btn-{{ opp.id }}" onclick="toggleShortlist('{{ opp.id }}')" class="btn btn-primary">Shortlist</button>
                 </td>
               </tr>
+
+              <!-- Resume Modal for Candidate -->
+              <div class="modal fade" id="resumeModal-{{ opp.id }}" tabindex="-1" aria-labelledby="resumeModalLabel-{{ opp.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="resumeModalLabel-{{ opp.id }}">{{ opp.name }}'s Resume</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <h6>Career History</h6>
+                      {% for position in opp.positions %}
+                        <p>{{ position.title }} at {{ position.org }} ({{ position.start.month }}/{{ position.start.year }} - {{ position.end.month }}/{{ position.end.year }})</p>
+                      {% endfor %}
+                      <h6>Education</h6>
+                      {% for school in opp.schools %}
+                        <p>{{ school.degree }} in {{ school.field }} from {{ school.org }} ({{ school.start.month }}/{{ school.start.year }} - {{ school.end.month }}/{{ school.end.year }})</p>
+                      {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Technical Skills Modal -->
+              <div class="modal fade" id="techSkillsModal-{{ opp.id }}" tabindex="-1" aria-labelledby="techSkillsModalLabel-{{ opp.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="techSkillsModalLabel-{{ opp.id }}">{{ opp.name }}'s Technical Skills</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <ul>
+                        {% for skill in opp.technical_skills_data %}
+                          <li>{{ skill.skill }} ({{ skill.level }}): {{ skill.reason }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Soft Skills Modal -->
+              <div class="modal fade" id="softSkillsModal-{{ opp.id }}" tabindex="-1" aria-labelledby="softSkillsModalLabel-{{ opp.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="softSkillsModalLabel-{{ opp.id }}">{{ opp.name }}'s Soft Skills</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <ul>
+                        {% for skill in opp.soft_skills_data %}
+                          <li>{{ skill.skill }} ({{ skill.level }}): {{ skill.reason }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             {% endfor %}
           </tbody>
         </table>
