@@ -13,8 +13,8 @@
           <h1 class="navbar-brand">Candidates for Senior Product Manager</h1>
           <p class="text-muted">Acme Inc. is seeking an experienced Senior Product Manager to lead the development and execution of our product strategy. In this role, you will collaborate with cross-functional teams, including engineering, design, marketing, and sales, to drive the product lifecycle from concept to launch. You will be responsible for defining the product roadmap, prioritizing features, and ensuring alignment with customer needs and business goals. The ideal candidate has a proven track record in product management, strong analytical and problem-solving skills, and the ability to balance customer feedback with business objectives. Experience in agile methodologies and excellent communication skills are essential for success in this role. Join us and help shape the future of innovation at Acme Inc.</p>
           <div>
-            <button class="btn btn-primary me-2">Export Shortlist</button>
-            <button class="btn btn-secondary me-2">Calibrate Position</button>
+            <button class="btn btn-primary me-2" onclick="showExportModal()">Export Shortlist</button>
+            <button class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#calibrateModal">Calibrate Scores</button>
             <button class="btn btn-outline-danger">Close Job</button>
           </div>
         </div>
@@ -42,6 +42,9 @@
               </th>
               <th onclick="sortTable(5)">
                 Industry <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable(6)">
+                Total Score <i class="fas fa-sort"></i>
               </th>
               <th></th>
             </tr>
@@ -91,6 +94,9 @@
                 </td>
                 <td>{{ opp.location }}</td>
                 <td>{{ opp.industry }}</td>
+                <td>
+                  <strong>{{ opp.total_score }}</strong>
+                </td>
                 <td>
                   <button id="shortlist-btn-{{ opp.id }}" onclick="toggleShortlist('{{ opp.id }}')" class="btn btn-primary">Shortlist</button>
                 </td>
@@ -170,10 +176,71 @@
       </div>
     </div>
   </div>
+
+  <!-- Calibrate Scores Modal -->
+  <div class="modal fade" id="calibrateModal" tabindex="-1" aria-labelledby="calibrateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="calibrateModalLabel">Calibrate Scores (Total must be 100%)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted">Adjust the weights for Work Experience, Technical Skills, and Soft Skills. The total must equal 100%.</p>
+
+          <div class="mb-3">
+            <label for="workWeight" class="form-label">Work Experience Weight</label>
+            <input type="number" class="form-control weight-input" id="workWeight" value="33" min="0" max="100" oninput="updateWeights()" />
+          </div>
+          <div class="mb-3">
+            <label for="techWeight" class="form-label">Technical Skills Weight</label>
+            <input type="number" class="form-control weight-input" id="techWeight" value="33" min="0" max="100" oninput="updateWeights()" />
+          </div>
+          <div class="mb-3">
+            <label for="softWeight" class="form-label">Soft Skills Weight</label>
+            <input type="number" class="form-control weight-input" id="softWeight" value="33" min="0" max="100" oninput="updateWeights()" />
+          </div>
+
+          <!-- Total Weight Progress Bar -->
+          <div class="mb-3">
+            <label for="totalWeight" class="form-label">Total Weight: <span id="totalWeightText">100%</span></label>
+            <div class="progress">
+              <div id="totalWeightProgress" class="progress-bar" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+          <small id="weightError" class="text-danger d-none">The total weight must equal 100%.</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" id="applyWeightsBtn" class="btn btn-primary" onclick="updateTotalScores()" disabled>Apply Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Confirmation Modal -->
+  <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exportModalLabel">Confirm Export</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            You have shortlisted <span id="shortlistedCount"></span> candidates. Are you sure you want to export them to your ATS?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="confirmExport()">Yes, Export</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block extrajs %}
-  <!-- Sorting Script -->
   <script>
     function sortTable(n) {
       const table = document.getElementById('candidatesTable')
@@ -186,7 +253,7 @@
         dir,
         switchcount = 0
       switching = true
-      dir = 'asc' // Set the sorting direction to ascending
+      dir = 'asc'
     
       while (switching) {
         switching = false
@@ -198,8 +265,8 @@
     
           const xContent = x.textContent.trim()
           const yContent = y.textContent.trim()
-          const xValue = isNaN(xContent) ? xContent.toLowerCase() : parseFloat(xContent)
-          const yValue = isNaN(yContent) ? yContent.toLowerCase() : parseFloat(yContent)
+          const xValue = n === 6 ? parseFloat(xContent) : xContent.toLowerCase()
+          const yValue = n === 6 ? parseFloat(yContent) : yContent.toLowerCase()
     
           if (dir === 'asc') {
             if (xValue > yValue) {
@@ -241,6 +308,95 @@
         button.classList.remove('btn-danger')
         button.classList.add('btn-primary')
       }
+    }
+    
+    function updateWeights() {
+      const workWeight = parseFloat(document.getElementById('workWeight').value) || 0
+      const techWeight = parseFloat(document.getElementById('techWeight').value) || 0
+      const softWeight = parseFloat(document.getElementById('softWeight').value) || 0
+    
+      const totalWeight = workWeight + techWeight + softWeight
+      const progressBar = document.getElementById('totalWeightProgress')
+      const totalWeightText = document.getElementById('totalWeightText')
+      const applyBtn = document.getElementById('applyWeightsBtn')
+      const weightError = document.getElementById('weightError')
+    
+      // Update progress bar and total weight text
+      totalWeightText.textContent = `${totalWeight}%`
+      progressBar.style.width = `${totalWeight}%`
+      progressBar.setAttribute('aria-valuenow', totalWeight)
+    
+      // Check if total weight equals 100
+      if (totalWeight === 100) {
+        progressBar.classList.remove('bg-danger')
+        progressBar.classList.add('bg-success')
+        weightError.classList.add('d-none')
+        applyBtn.disabled = false
+      } else {
+        progressBar.classList.remove('bg-success')
+        progressBar.classList.add('bg-danger')
+        weightError.classList.remove('d-none')
+        applyBtn.disabled = true
+      }
+    }
+    
+    function updateTotalScores() {
+      // Update total scores logic (as before)
+      const workWeight = parseFloat(document.getElementById('workWeight').value) / 100
+      const techWeight = parseFloat(document.getElementById('techWeight').value) / 100
+      const softWeight = parseFloat(document.getElementById('softWeight').value) / 100
+    
+      const rows = document.querySelectorAll('#candidatesTable tbody tr')
+      rows.forEach((row) => {
+        const workExp = parseFloat(row.querySelector('td:nth-child(2) span').textContent) || 0
+        const techSkills = parseFloat(row.querySelector('td:nth-child(3) span').textContent) || 0
+        const softSkills = parseFloat(row.querySelector('td:nth-child(4) span').textContent) || 0
+    
+        const totalScore = workExp * workWeight + techSkills * techWeight + softSkills * softWeight
+        row.querySelector('td:nth-child(7) strong').textContent = totalScore.toFixed(1)
+      })
+    
+      sortTable(6) // Sort by total score
+    }
+    
+    // Function to count the number of shortlisted candidates
+    function countShortlisted() {
+      const rows = document.querySelectorAll('#candidatesTable tbody tr')
+      let shortlistedCount = 0
+    
+      rows.forEach((row) => {
+        if (row.classList.contains('table-success')) {
+          // Check if the row is shortlisted
+          shortlistedCount++
+        }
+      })
+    
+      return shortlistedCount
+    }
+    
+    // Show the export confirmation modal
+    function showExportModal() {
+      const shortlistedCount = countShortlisted()
+      document.getElementById('shortlistedCount').textContent = shortlistedCount
+    
+      if (shortlistedCount > 0) {
+        const exportModal = new bootstrap.Modal(document.getElementById('exportModal'))
+        exportModal.show()
+      } else {
+        alert('No candidates shortlisted. Please shortlist candidates before exporting.')
+      }
+    }
+    
+    // Function to confirm export (you can implement export logic here)
+    function confirmExport() {
+      const shortlistedCount = countShortlisted()
+      alert(`${shortlistedCount} candidates have been exported to your ATS!`)
+    
+      // Implement actual export logic here (e.g., sending shortlisted candidates to the ATS)
+    
+      // Hide the modal after confirmation
+      const exportModal = bootstrap.Modal.getInstance(document.getElementById('exportModal'))
+      exportModal.hide()
     }
   </script>
 {% endblock %}

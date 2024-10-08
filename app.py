@@ -61,6 +61,9 @@ def candidates():
         # Generate random skill scores
         opp['technical_skills_score'] = round(random.uniform(3, 5), 1)  # Random score between 3 and 5
         opp['soft_skills_score'] = round(random.uniform(3, 5), 1)  # Random score between 3 and 5
+
+         # Calculate total score as a weighted average
+        opp['total_score'] = round((opp['work_experience'] + opp['technical_skills_score'] + opp['soft_skills_score']) / 3, 1)
         
         opp['industry'] = random.choice(industries)  # Randomly assign an industry (to be updated lated)
 
