@@ -9,12 +9,13 @@
 {% endblock %}
 
 {% block content %}
+  <!-- Overview Cards -->
   <div class="row mb-4">
     <div class="col-md-4">
       <div class="card shadow-sm">
         <div class="card-body">
           <h5 class="card-title">Active Job Listings</h5>
-          <p class="card-text display-4">8</p>
+          <p class="card-text display-4">{{ active_jobs|default(5) }}</p> <!-- Placeholder for job count (default: 5) -->
         </div>
       </div>
     </div>
@@ -22,7 +23,7 @@
       <div class="card shadow-sm">
         <div class="card-body">
           <h5 class="card-title">Candidates in Pipeline</h5>
-          <p class="card-text display-4">39</p>
+          <p class="card-text display-4">{{ pipeline_candidates|default(42) }}</p> <!-- Placeholder for candidates (default: 42) -->
         </div>
       </div>
     </div>
@@ -30,18 +31,63 @@
       <div class="card shadow-sm">
         <div class="card-body">
           <h5 class="card-title">Shortlisted Candidates</h5>
-          <p class="card-text display-4">10</p>
+          <p class="card-text display-4">{{ shortlisted_candidates|default(12) }}</p> <!-- Placeholder for shortlisted (default: 12) -->
         </div>
       </div>
     </div>
   </div>
 
+  <!-- AI Insights: Top Ranked Candidates -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Top Ranked Candidates</h5>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Candidate</th>
+                <th scope="col">Rank</th>
+                <th scope="col">Experience</th>
+                <th scope="col">Fit Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Placeholder for dynamically loading top candidates from AI ranking -->
+              <tr>
+                <td>Jane Doe</td>
+                <td>1</td>
+                <td>5 years</td>
+                <td>95%</td>
+              </tr>
+              <tr>
+                <td>John Smith</td>
+                <td>2</td>
+                <td>7 years</td>
+                <td>92%</td>
+              </tr>
+              <tr>
+                <td>Emily Davis</td>
+                <td>3</td>
+                <td>4 years</td>
+                <td>90%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Candidate Source Breakdown -->
   <div class="row">
     <div class="col-12">
       <div class="card shadow-sm">
         <div class="card-body">
           <h5 class="card-title">Candidate Source Breakdown</h5>
-          <canvas id="candidatesourcechart" width="80%" height="40vh"></canvas>
+          <div class="chart-container" style="position: relative; height:50vh; width:50vh;">
+            <canvas id="candidatesourcechart"></canvas> <!-- Canvas without inline width/height -->
+          </div>
         </div>
       </div>
     </div>
@@ -53,13 +99,13 @@
     document.addEventListener('DOMContentLoaded', function () {
       var ctx = document.getElementById('candidatesourcechart').getContext('2d')
       var candidatesourcechart = new Chart(ctx, {
-        type: 'bar', // or 'pie', 'line', etc.
+        type: 'pie',
         data: {
           labels: ['Referral', 'Job Boards', 'Agency', 'Direct Applications'],
           datasets: [
             {
               label: '# of Candidates',
-              data: [12, 19, 3, 5], // Example data
+              data: [12, 19, 3, 5], // Placeholder data
               backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)'],
               borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'],
               borderWidth: 1
@@ -67,9 +113,11 @@
           ]
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          responsive: true,
+          maintainAspectRatio: false, // Allows the chart to adjust to the container
+          plugins: {
+            legend: {
+              position: 'left'
             }
           }
         }

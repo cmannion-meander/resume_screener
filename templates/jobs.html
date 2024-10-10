@@ -6,7 +6,7 @@
 <nav class="navbar navbar-light bg-white shadow-sm mb-4">
     <div class="container">
         <h1 class="navbar-brand">Job Listings</h1>
-        <button class="btn btn-primary">Add New Job</button>
+        <button class="btn btn-primary" onclick="openJobForm()">Add New Job</button>
     </div>
 </nav>
 
@@ -29,14 +29,90 @@
                 <td>{{ job.location }}</td>
                 <td>{{ job.industry }}</td>
                 <td>{{ job.created_on }}</td>
-                <td>{{ job.status }}</td>
+                <td>
+                    <span class="badge {% if job.status == 'Open' %}bg-success{% else %}bg-secondary{% endif %}">{{ job.status }}</span>
+                </td>
                 <td>
                     <a href="/jobs/{{ job.id }}/edit" class="btn btn-outline-primary btn-sm">Edit</a>
-                    <button class="btn btn-outline-danger btn-sm">Delete</button>
+                    {% if job.status == 'Open' %}
+                    <button class="btn btn-outline-warning btn-sm" onclick="closeJob({{ job.id }})">Close</button>
+                    {% else %}
+                    <button class="btn btn-outline-info btn-sm" onclick="reopenJob({{ job.id }})">Reopen</button>
+                    {% endif %}
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteJob({{ job.id }})">Delete</button>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<!-- Job Form Modal (for Add New Job) -->
+<div class="modal fade" id="jobFormModal" tabindex="-1" aria-labelledby="jobFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jobFormModalLabel">Add New Job</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="jobForm">
+                    <div class="mb-3">
+                        <label for="jobTitle" class="form-label">Job Title</label>
+                        <input type="text" class="form-control" id="jobTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="jobLocation" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="jobLocation" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="jobIndustry" class="form-label">Industry</label>
+                        <input type="text" class="form-control" id="jobIndustry" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Job</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    function openJobForm() {
+        const jobFormModal = new bootstrap.Modal(document.getElementById('jobFormModal'));
+        jobFormModal.show();
+    }
+
+    function closeJob(jobId) {
+        if (confirm('Are you sure you want to close this job?')) {
+            // Logic to close the job (AJAX or form submission)
+            alert(`Job ${jobId} has been closed.`);
+        }
+    }
+
+    function reopenJob(jobId) {
+        if (confirm('Are you sure you want to reopen this job?')) {
+            // Logic to reopen the job (AJAX or form submission)
+            alert(`Job ${jobId} has been reopened.`);
+        }
+    }
+
+    function deleteJob(jobId) {
+        if (confirm('Are you sure you want to delete this job?')) {
+            // Logic to delete the job (AJAX or form submission)
+            alert(`Job ${jobId} has been deleted.`);
+        }
+    }
+
+    document.getElementById('jobForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const title = document.getElementById('jobTitle').value;
+        const location = document.getElementById('jobLocation').value;
+        const industry = document.getElementById('jobIndustry').value;
+
+        // Logic to handle job creation (AJAX or form submission)
+        alert(`New job "${title}" added!`);
+    });
+</script>
 {% endblock %}

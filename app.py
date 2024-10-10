@@ -72,10 +72,13 @@ def candidates():
 
 @app.route('/jobs')
 def jobs():
-    # Example job data
     jobs = [
         {'id': 1, 'title': 'Senior Product Manager', 'location': 'New York', 'industry': 'Technology', 'created_on': '2024-10-04', 'status': 'Open'},
-        {'id': 2, 'title': 'Software Engineer', 'location': 'San Francisco', 'industry': 'Technology', 'created_on': '2024-09-22', 'status': 'Closed'}
+        {'id': 2, 'title': 'Software Engineer', 'location': 'San Francisco', 'industry': 'Technology', 'created_on': '2024-09-22', 'status': 'Closed'},
+        {'id': 3, 'title': 'Data Scientist', 'location': 'Boston', 'industry': 'Healthcare', 'created_on': '2024-10-01', 'status': 'Open'},
+        {'id': 4, 'title': 'UX Designer', 'location': 'Austin', 'industry': 'E-commerce', 'created_on': '2024-10-03', 'status': 'Open'},
+        {'id': 5, 'title': 'DevOps Engineer', 'location': 'Seattle', 'industry': 'Cloud Services', 'created_on': '2024-09-30', 'status': 'Open'},
+        {'id': 6, 'title': 'Project Manager', 'location': 'Chicago', 'industry': 'Construction', 'created_on': '2024-10-02', 'status': 'Open'}
     ]
     return render_template('jobs.html', jobs=jobs)
 
